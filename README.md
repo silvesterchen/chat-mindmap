@@ -1,10 +1,10 @@
-# AI Mind Map Tool
+# Chat MindMap Tool
 一款画布式的AI对话工具，支持AI助手对话和上下文记忆。本项目在MacOS系统研发测试。
 
 拥有以下优势：
-1. 网状思维可视化，逻辑关联一眼看透，告别对话刷屏找重点～
-2. 节点串联发散灵感，复杂逻辑直观呈现，比线性对话更懂你的思考节奏！
-3. 画布式逻辑拆解，主题关联一键搭建，思维不设限，梳理更高效～
+- 1. 网状思维可视化，逻辑关联一眼看透，告别对话刷屏找重点～
+- 2. 节点串联发散灵感，复杂逻辑直观呈现，比线性对话更懂你的思考节奏！
+- 3. 画布式逻辑拆解，主题关联一键搭建，思维不设限，梳理更高效～
 
 ## 核心功能
 - 思维导图编辑（双击编辑、字体调整、节点缩放）
@@ -14,8 +14,8 @@
 - 文件管理（创建/重命名/删除导图/文件夹）
 
 ## 项目结构
-- 后端: /daotu_test/backend (FastAPI)
-- 前端: /daotu_test/frontend (React/Vite)
+- 后端: /chat_mindmap/backend (FastAPI)
+- 前端: /chat_mindmap/frontend (React/Vite)
 
 ## 前置条件
 - 安装Python 3.8+
@@ -27,7 +27,7 @@
 ### 方式一：一键启动（推荐）
 1. 打开终端，进入项目根目录:
    ```bash
-   cd daotu_test
+   cd chat_mindmap
    ```
 2. 运行启动脚本:
    ```bash
@@ -45,7 +45,7 @@
 #### 1. 启动后端服务
 1. 打开终端，进入后端目录:
    ```bash
-   cd /daotu_test/backend
+   cd /chat_mindmap/backend
    ```
 2. 创建并激活虚拟环境（可选但推荐）:
    ```bash
@@ -67,7 +67,7 @@
 #### 2. 启动前端服务
 1. 打开新终端，进入前端目录:
    ```bash
-   cd /daotu_test/frontend
+   cd /chat_mindmap/frontend
    ```
 2. 安装前端依赖:
    ```bash
