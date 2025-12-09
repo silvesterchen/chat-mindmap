@@ -8,7 +8,7 @@
       },
       "position": {
         "x": 0,
-        "y": 113
+        "y": 236.5
       },
       "measured": {
         "width": 150,
@@ -29,7 +29,7 @@
       "type": "default",
       "position": {
         "x": 200,
-        "y": 0
+        "y": 36.25
       },
       "data": {
         "label": "右键打开ai对话，右上角齿轮进行模型配置"
@@ -53,91 +53,105 @@
       "type": "default",
       "position": {
         "x": 200,
-        "y": 208.75
+        "y": 167.25
       },
       "data": {
-        "label": "新节点"
+        "label": "双击节点，即可编辑内容。"
       },
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
         "width": 150,
-        "height": 42
+        "height": 60
       },
       "selected": false,
       "style": {
         "width": 150,
-        "height": 42
+        "height": 60
       },
       "width": 150,
-      "height": 42
+      "height": 60
     },
     {
       "id": "1765179927313",
       "type": "default",
       "position": {
         "x": 400,
-        "y": 10.5
+        "y": 0
       },
       "data": {
-        "label": "双击节点，或选中后按 Enter 键，即可编辑内容。",
+        "label": "建议提示词会影响ai建议的问题",
         "notes": "双击节点，或选中后按 Enter 键，即可编辑内容。"
       },
       "style": {
         "width": 263,
-        "height": 60
+        "height": 42
       },
       "width": 263,
       "measured": {
         "width": 263,
-        "height": 60
+        "height": 42
       },
       "targetPosition": "left",
       "sourcePosition": "right",
       "selected": false,
-      "height": 60,
+      "height": 42,
       "resizing": false
     },
     {
-      "id": "1765191310916",
+      "id": "1765266829293",
       "type": "default",
       "position": {
         "x": 456.5,
-        "y": 120.5
+        "y": 92
       },
       "data": {
-        "label": "新节点"
+        "label": "支持ai对话中选中文字后插入为子节点"
       },
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
         "width": 150,
-        "height": 41
-      }
+        "height": 81
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 81
+      },
+      "width": 150,
+      "height": 81
     },
     {
-      "id": "1765191311907",
+      "id": "1765266856198",
       "type": "default",
       "position": {
-        "x": 456.5,
-        "y": 211.5
+        "x": 200,
+        "y": 277.25
       },
       "data": {
-        "label": "新节点"
+        "label": "拖拽节点到其他节点上即可更换父节点"
       },
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
         "width": 150,
-        "height": 41
-      }
+        "height": 81
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 81
+      },
+      "width": 150,
+      "height": 81
     },
     {
-      "id": "1765191313832",
+      "id": "1765266889173",
       "type": "default",
       "position": {
-        "x": 456.5,
-        "y": 302.5
+        "x": 200,
+        "y": 408.25
       },
       "data": {
         "label": "新节点"
@@ -146,59 +160,15 @@
       "sourcePosition": "right",
       "measured": {
         "width": 150,
-        "height": 41
-      }
-    },
-    {
-      "id": "1765191315091",
-      "type": "default",
-      "position": {
-        "x": 713,
-        "y": 118.25
+        "height": 60
       },
-      "data": {
-        "label": "新节点"
-      },
-      "targetPosition": "left",
-      "sourcePosition": "right",
-      "measured": {
+      "selected": true,
+      "style": {
         "width": 150,
-        "height": 41
-      }
-    },
-    {
-      "id": "1765191316961",
-      "type": "default",
-      "position": {
-        "x": 713,
-        "y": 209.25
+        "height": 60
       },
-      "data": {
-        "label": "新节点"
-      },
-      "targetPosition": "left",
-      "sourcePosition": "right",
-      "measured": {
-        "width": 150,
-        "height": 41
-      }
-    },
-    {
-      "id": "1765191318033",
-      "type": "default",
-      "position": {
-        "x": 713,
-        "y": 300.25
-      },
-      "data": {
-        "label": "新节点"
-      },
-      "targetPosition": "left",
-      "sourcePosition": "right",
-      "measured": {
-        "width": 150,
-        "height": 41
-      }
+      "width": 150,
+      "height": 60
     }
   ],
   "edges": [
@@ -219,34 +189,19 @@
       "target": "1765179927313"
     },
     {
-      "id": "e1765179908129-1765191310916",
-      "source": "1765179908129",
-      "target": "1765191310916"
+      "id": "e1765179904941-1765266829293",
+      "source": "1765179904941",
+      "target": "1765266829293"
     },
     {
-      "id": "e1765179908129-1765191311907",
-      "source": "1765179908129",
-      "target": "1765191311907"
+      "id": "eroot-1765266856198",
+      "source": "root",
+      "target": "1765266856198"
     },
     {
-      "id": "e1765179908129-1765191313832",
-      "source": "1765179908129",
-      "target": "1765191313832"
-    },
-    {
-      "id": "e1765191311907-1765191315091",
-      "source": "1765191311907",
-      "target": "1765191315091"
-    },
-    {
-      "id": "e1765191311907-1765191316961",
-      "source": "1765191311907",
-      "target": "1765191316961"
-    },
-    {
-      "id": "e1765191311907-1765191318033",
-      "source": "1765191311907",
-      "target": "1765191318033"
+      "id": "eroot-1765266889173",
+      "source": "root",
+      "target": "1765266889173"
     }
   ],
   "viewport": {
