@@ -557,7 +557,14 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                         </div>
                         {msg.role === 'assistant' && msg.content && (
                              <button 
-                                onClick={() => handleInsertAsChild(msg.content)}
+                                onClick={() => {
+                                    const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
+                                    let content = msg.content;
+                                    if (prevMsg && prevMsg.role === 'user') {
+                                        content = `${prevMsg.content}\n\n${msg.content}`;
+                                    }
+                                    handleInsertAsChild(content);
+                                }}
                                 className="mt-1 text-xs text-blue-600 flex items-center gap-1 hover:underline"
                             >
                                 <PlusCircle size={12} /> 插入为子节点

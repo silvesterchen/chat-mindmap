@@ -83,7 +83,7 @@ export default memo(({ id, data, selected }) => {
 
   const handleKeyDown = (evt) => {
       evt.stopPropagation();
-      if (evt.key === 'Enter' && !evt.shiftKey) {
+      if (evt.key === 'Enter' && (evt.metaKey || evt.ctrlKey)) {
           evt.preventDefault(); 
           onSubmit();
       }
