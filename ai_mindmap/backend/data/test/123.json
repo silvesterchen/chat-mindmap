@@ -1,0 +1,65 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "input",
+      "data": {
+        "label": "示例"
+      },
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "measured": {
+        "width": 150,
+        "height": 42
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 42
+      },
+      "width": 150,
+      "height": 42,
+      "targetPosition": "left",
+      "sourcePosition": "right"
+    },
+    {
+      "id": "1765177249073",
+      "type": "default",
+      "position": {
+        "x": 200,
+        "y": 0
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 42
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 42
+      },
+      "width": 150,
+      "height": 42
+    }
+  ],
+  "edges": [
+    {
+      "id": "eroot-1765177249073",
+      "source": "root",
+      "target": "1765177249073"
+    }
+  ],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "chatHistory": null
+}
