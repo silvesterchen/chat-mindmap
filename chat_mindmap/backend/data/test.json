@@ -1,0 +1,270 @@
+{
+  "nodes": [
+    {
+      "id": "root",
+      "type": "input",
+      "data": {
+        "label": "中心主题"
+      },
+      "position": {
+        "x": 0,
+        "y": 113
+      },
+      "measured": {
+        "width": 150,
+        "height": 42
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 42
+      },
+      "width": 150,
+      "height": 42
+    },
+    {
+      "id": "1765179904941",
+      "type": "default",
+      "position": {
+        "x": 200,
+        "y": 0
+      },
+      "data": {
+        "label": "右键打开ai对话，右上角齿轮进行模型配置"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 81
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 81
+      },
+      "width": 150,
+      "height": 81
+    },
+    {
+      "id": "1765179908129",
+      "type": "default",
+      "position": {
+        "x": 200,
+        "y": 208.75
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 42
+      },
+      "selected": false,
+      "style": {
+        "width": 150,
+        "height": 42
+      },
+      "width": 150,
+      "height": 42
+    },
+    {
+      "id": "1765179927313",
+      "type": "default",
+      "position": {
+        "x": 400,
+        "y": 10.5
+      },
+      "data": {
+        "label": "双击节点，或选中后按 Enter 键，即可编辑内容。",
+        "notes": "双击节点，或选中后按 Enter 键，即可编辑内容。"
+      },
+      "style": {
+        "width": 263,
+        "height": 60
+      },
+      "width": 263,
+      "measured": {
+        "width": 263,
+        "height": 60
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "selected": false,
+      "height": 60,
+      "resizing": false
+    },
+    {
+      "id": "1765191310916",
+      "type": "default",
+      "position": {
+        "x": 456.5,
+        "y": 120.5
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    },
+    {
+      "id": "1765191311907",
+      "type": "default",
+      "position": {
+        "x": 456.5,
+        "y": 211.5
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    },
+    {
+      "id": "1765191313832",
+      "type": "default",
+      "position": {
+        "x": 456.5,
+        "y": 302.5
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    },
+    {
+      "id": "1765191315091",
+      "type": "default",
+      "position": {
+        "x": 713,
+        "y": 118.25
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    },
+    {
+      "id": "1765191316961",
+      "type": "default",
+      "position": {
+        "x": 713,
+        "y": 209.25
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    },
+    {
+      "id": "1765191318033",
+      "type": "default",
+      "position": {
+        "x": 713,
+        "y": 300.25
+      },
+      "data": {
+        "label": "新节点"
+      },
+      "targetPosition": "left",
+      "sourcePosition": "right",
+      "measured": {
+        "width": 150,
+        "height": 41
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "eroot-1765179904941",
+      "source": "root",
+      "target": "1765179904941",
+      "selected": false
+    },
+    {
+      "id": "eroot-1765179908129",
+      "source": "root",
+      "target": "1765179908129"
+    },
+    {
+      "id": "e1765179904941-1765179927313",
+      "source": "1765179904941",
+      "target": "1765179927313"
+    },
+    {
+      "id": "e1765179908129-1765191310916",
+      "source": "1765179908129",
+      "target": "1765191310916"
+    },
+    {
+      "id": "e1765179908129-1765191311907",
+      "source": "1765179908129",
+      "target": "1765191311907"
+    },
+    {
+      "id": "e1765179908129-1765191313832",
+      "source": "1765179908129",
+      "target": "1765191313832"
+    },
+    {
+      "id": "e1765191311907-1765191315091",
+      "source": "1765191311907",
+      "target": "1765191315091"
+    },
+    {
+      "id": "e1765191311907-1765191316961",
+      "source": "1765191311907",
+      "target": "1765191316961"
+    },
+    {
+      "id": "e1765191311907-1765191318033",
+      "source": "1765191311907",
+      "target": "1765191318033"
+    }
+  ],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "chatHistory": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "如何编辑新节点的内容？"
+      },
+      {
+        "role": "assistant",
+        "content": "双击节点，或选中后按 Enter 键，即可编辑内容。"
+      }
+    ],
+    "lastUpdated": 1765189476636
+  }
+}
