@@ -110,9 +110,7 @@
    npm run dev
    
    ```
-
    - 服务器默认运行在 [http://localhost:3000](http://localhost:3000)
-   - 若端口3000被占用，Vite会自动尝试其他端口（如3000）
 
 3. 访问程序
 在浏览器中输入 http://localhost:3000 即可体验！
