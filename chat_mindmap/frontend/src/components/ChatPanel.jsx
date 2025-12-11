@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Settings, PlusCircle, Loader2 } from 'lucide-react';
+import { X, Send, Settings, PlusCircle, Loader2, RefreshCw } from 'lucide-react';
 import useStore from '../store/useStore';
 import { chatStream, saveMap } from '../api';
 import ReactMarkdown from 'react-markdown';
@@ -34,78 +34,62 @@ const ChatPanel = () => {
 
     const activeNode = nodes.find(n => n.id === activeNodeId);
 
-    // Suggestion generation trigger
-    useEffect(() => {
-        const fetchSuggestions = async () => {
-            if (!isChatOpen || !activeNode || !activeLlmConfig) return;
-            
-            // Only fetch if suggestions are empty or activeNode changed?
-            // Actually we want to refresh on node change.
-            // But we need to avoid infinite loops if this effect runs too often.
-            // activeNode object changes reference often?
-            // Use activeNodeId.
-        };
-        fetchSuggestions();
-    }, [isChatOpen, activeNodeId, activeLlmConfig]); // We will implement the real logic below in a better way to avoid defining it inside useEffect every time if complex
+    // Generate suggestions logic
+    const generateSuggestions = async () => {
+        if (!isChatOpen || !activeNode || !activeLlmConfig) return;
 
-    useEffect(() => {
-        const fetchSuggestions = async () => {
-            if (!isChatOpen || !activeNode || !activeLlmConfig) return;
+        setSuggestionsLoading(true);
+        setSuggestions([]);
 
-            setSuggestionsLoading(true);
-            setSuggestions([]);
+        const prompt = activeLlmConfig.suggestion_prompt || "后续用户可能会提问的问题";
+        const count = activeLlmConfig.suggestion_count || 3;
 
-            const prompt = activeLlmConfig.suggestion_prompt || "后续用户可能会提问的问题";
-            const count = activeLlmConfig.suggestion_count || 3;
-
-            const systemMsg = {
-                role: 'system',
-                content: `You are a helpful assistant. Based on the provided content, suggest exactly ${count} follow-up questions or actions the user might want to take. 
+        const systemMsg = {
+            role: 'system',
+            content: `You are a helpful assistant. Based on the provided content, suggest exactly ${count} follow-up questions or actions the user might want to take. 
 The user's custom prompt for this task is: "${prompt}".
 Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do not output markdown code blocks, just the raw JSON.`
-            };
-
-            const userMsg = {
-                role: 'user',
-                content: `Content: ${activeNode.data.label}`
-            };
-
-            let fullText = "";
-            try {
-                await chatStream([systemMsg, userMsg], activeLlmConfig, null, (chunk) => {
-                    fullText += chunk;
-                }, (err) => {
-                    console.error("Suggestion stream error", err);
-                });
-
-                try {
-                    const cleanText = fullText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const parsed = JSON.parse(cleanText);
-                    if (Array.isArray(parsed)) {
-                        setSuggestions(parsed.slice(0, count));
-                    } else {
-                        throw new Error("Not an array");
-                    }
-                } catch (e) {
-                    console.warn("Failed to parse suggestions as JSON, falling back to line split", e);
-                    const lines = fullText.split('\n')
-                        .map(l => l.trim().replace(/^\d+\.\s*/, '').replace(/^- \s*/, ''))
-                        .filter(l => l.length > 0)
-                        .slice(0, count);
-                    setSuggestions(lines);
-                }
-            } catch (err) {
-                console.error("Suggestion error", err);
-            } finally {
-                setSuggestionsLoading(false);
-            }
         };
 
-        // Debounce or just run? 
-        // If the user clicks quickly between nodes, we might trigger many requests.
-        // But for now, direct execution is fine.
-        fetchSuggestions();
-    }, [activeNodeId, isChatOpen]); // Removed activeLlmConfig to prevent re-fetch on config edit unless node changes
+        const userMsg = {
+            role: 'user',
+            content: `Content: ${activeNode.data.label}`
+        };
+
+        let fullText = "";
+        try {
+            await chatStream([systemMsg, userMsg], activeLlmConfig, null, (chunk) => {
+                fullText += chunk;
+            }, (err) => {
+                console.error("Suggestion stream error", err);
+            });
+
+            try {
+                const cleanText = fullText.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(cleanText);
+                if (Array.isArray(parsed)) {
+                    setSuggestions(parsed.slice(0, count));
+                } else {
+                    throw new Error("Not an array");
+                }
+            } catch (e) {
+                console.warn("Failed to parse suggestions as JSON, falling back to line split", e);
+                const lines = fullText.split('\n')
+                    .map(l => l.trim().replace(/^\d+\.\s*/, '').replace(/^- \s*/, ''))
+                    .filter(l => l.length > 0)
+                    .slice(0, count);
+                setSuggestions(lines);
+            }
+        } catch (err) {
+            console.error("Suggestion error", err);
+        } finally {
+            setSuggestionsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        generateSuggestions();
+    }, [activeNodeId, isChatOpen]);
 
     const [selectionMenu, setSelectionMenu] = useState(null);
 
@@ -591,7 +575,16 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                 ) : (
                     suggestions.length > 0 && (
                         <div className="flex flex-col gap-2 mt-4">
-                             <div className="text-xs text-gray-500 ml-1">您可以继续问：</div>
+                             <div className="flex justify-between items-center px-1">
+                                <div className="text-xs text-gray-500">您可以继续问：</div>
+                                <button 
+                                    onClick={generateSuggestions}
+                                    className="p-1 hover:bg-blue-100 rounded-full text-blue-500 transition-colors"
+                                    title="重新生成建议"
+                                >
+                                    <RefreshCw size={12} />
+                                </button>
+                             </div>
                              {suggestions.map((suggestion, idx) => (
                                 <button 
                                     key={idx}
