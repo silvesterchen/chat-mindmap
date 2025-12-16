@@ -6,7 +6,7 @@
 > ✨ 模仿flowith交互方式开发，MacOS/Windows双系统适配（Windows已优化启动体验）
 
 <img width="1702" height="807" alt="image" src="https://github.com/user-attachments/assets/304f8f18-6257-4dbb-86de-3571cfbedf71" />
-
+演示视频：https://www.bilibili.com/video/BV1YGqhBKEf6/?vd_source=724965bec351ba7062c785c9203557e1
 
 ## 🎯 核心价值：为什么选择Chat MindMap？
 - 🧠 **网状思维可视化**：逻辑关联一眼看透，告别对话刷屏找重点～
