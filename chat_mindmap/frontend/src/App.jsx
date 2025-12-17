@@ -12,7 +12,7 @@ function App() {
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col h-full relative">
+      <div className="flex-1 flex h-full relative">
         {!isSidebarOpen && (
              <button 
                 onClick={toggleSidebar}
@@ -22,7 +22,7 @@ function App() {
             </button>
         )}
         
-        <div className="flex-1 h-full">
+        <div className="flex-1 h-full relative">
             <MindMap />
         </div>
 

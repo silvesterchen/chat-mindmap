@@ -215,7 +215,7 @@ const useStore = create(persist((set, get) => ({
       return unique;
   },
   
-  isChatOpen: false,
+  isChatOpen: true,
   setChatOpen: (isOpen) => set({ isChatOpen: isOpen }),
   activeNodeId: null, // Node triggering the chat
   setActiveNodeId: (id) => set({ activeNodeId: id }),

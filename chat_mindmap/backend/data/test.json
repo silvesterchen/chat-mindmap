@@ -11,8 +11,8 @@
         "y": 236.5
       },
       "measured": {
-        "width": 150,
-        "height": 42
+        "width": 114,
+        "height": 24
       },
       "targetPosition": "left",
       "sourcePosition": "right",
@@ -37,8 +37,8 @@
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
-        "width": 150,
-        "height": 81
+        "width": 114,
+        "height": 61
       },
       "selected": false,
       "style": {
@@ -61,8 +61,8 @@
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
-        "width": 150,
-        "height": 60
+        "width": 114,
+        "height": 40
       },
       "selected": false,
       "style": {
@@ -89,8 +89,8 @@
       },
       "width": 263,
       "measured": {
-        "width": 263,
-        "height": 42
+        "width": 227,
+        "height": 24
       },
       "targetPosition": "left",
       "sourcePosition": "right",
@@ -111,8 +111,8 @@
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
-        "width": 150,
-        "height": 81
+        "width": 114,
+        "height": 61
       },
       "selected": false,
       "style": {
@@ -135,8 +135,8 @@
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
-        "width": 150,
-        "height": 81
+        "width": 114,
+        "height": 61
       },
       "selected": false,
       "style": {
@@ -159,10 +159,10 @@
       "targetPosition": "left",
       "sourcePosition": "right",
       "measured": {
-        "width": 150,
-        "height": 60
+        "width": 122,
+        "height": 40
       },
-      "selected": true,
+      "selected": false,
       "style": {
         "width": 150,
         "height": 60
@@ -220,6 +220,6 @@
         "content": "双击节点，或选中后按 Enter 键，即可编辑内容。"
       }
     ],
-    "lastUpdated": 1765266204866
+    "lastUpdated": 1765957699104
   }
 }

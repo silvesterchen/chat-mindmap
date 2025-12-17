@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Settings, PlusCircle, Loader2, RefreshCw } from 'lucide-react';
+import { X, Send, Settings, PlusCircle, Loader2, RefreshCw, PanelRightOpen, PanelRightClose } from 'lucide-react';
 import useStore from '../store/useStore';
 import { chatStream, saveMap } from '../api';
 import ReactMarkdown from 'react-markdown';
@@ -173,13 +173,14 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
         setIsLoading(false);
     };
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    const handleSend = async (messageContent = null) => {
+        const contentToSend = messageContent || input;
+        if (!contentToSend.trim()) return;
         
         const abortController = new AbortController();
         abortControllerRef.current = abortController;
         
-        const userMsg = { role: 'user', content: input };
+        const userMsg = { role: 'user', content: contentToSend };
         addChatMessage(userMsg);
         setInput('');
         setIsLoading(true);
@@ -329,26 +330,41 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
         }
     };
 
-    if (!isChatOpen) return null;
+    if (!isChatOpen) {
+        return (
+            <div className="absolute top-4 right-4 z-20">
+                <button 
+                    onClick={() => setChatOpen(true)}
+                    className="p-2 bg-white shadow rounded-lg border border-gray-200 hover:bg-gray-50 text-blue-500"
+                    title="展开AI助手"
+                >
+                    <PanelRightOpen size={20} />
+                </button>
+            </div>
+        );
+    }
 
     return (
-        <div className="w-96 bg-white border-l border-gray-200 h-full flex flex-col shadow-xl z-20 absolute right-0 top-0 bottom-0">
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col h-full shadow-xl z-20 transition-all duration-300">
             {/* Header */}
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-                <h3 className="font-semibold text-gray-700">
-                    AI 助手 
-                    {activeNode && (
-                        <span className="text-xs font-normal text-gray-500 ml-1">
-                            ({activeNode.data.label.length > 10 ? activeNode.data.label.slice(0, 10) + '...' : activeNode.data.label})
-                        </span>
-                    )}
-                </h3>
+                <h2 className="font-semibold text-gray-700 flex items-center gap-2">
+                    AI 助手 {activeNode ? `(${activeNode.data.label.substring(0, 10)}${activeNode.data.label.length > 10 ? '...' : ''})` : ''}
+                </h2>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setShowConfig(!showConfig)} className="p-1 hover:bg-gray-200 rounded text-gray-600">
+                    <button 
+                        onClick={() => setShowConfig(!showConfig)}
+                        className="p-1.5 hover:bg-gray-200 rounded text-gray-600 transition-colors"
+                        title="设置"
+                    >
                         <Settings size={18} />
                     </button>
-                    <button onClick={() => setChatOpen(false)} className="p-1 hover:bg-gray-200 rounded text-gray-600">
-                        <X size={18} />
+                    <button 
+                        onClick={() => setChatOpen(false)}
+                        className="p-1.5 hover:bg-gray-200 rounded text-gray-600 transition-colors"
+                        title="隐藏AI助手"
+                    >
+                        <PanelRightClose size={18} />
                     </button>
                 </div>
             </div>
@@ -588,7 +604,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                              {suggestions.map((suggestion, idx) => (
                                 <button 
                                     key={idx}
-                                    onClick={() => setInput(suggestion)}
+                                    onClick={() => handleSend(suggestion)}
                                     className="text-left p-2 bg-white border border-blue-200 rounded-lg text-sm text-gray-700 hover:bg-blue-50 hover:border-blue-300 transition-colors shadow-sm"
                                 >
                                     {suggestion}
@@ -608,7 +624,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={e => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
+                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
                                 e.preventDefault();
                                 if (!isLoading) {
                                     handleSend();
@@ -629,7 +645,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                         </button>
                     ) : (
                         <button 
-                            onClick={handleSend}
+                            onClick={() => handleSend()}
                             disabled={!input.trim()}
                             className="px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 flex items-center justify-center"
                         >
