@@ -66,7 +66,7 @@ const MindMapContent = () => {
     };
 
     const onLayout = useCallback((direction = 'LR', nodesParam, edgesParam) => {
-        pushHistory(); // Save state before layout
+        pushHistory('layout'); // Save state before layout, marking it as a layout action
         const currentNodes = nodesParam || getNodes();
         const currentEdges = edgesParam || getEdges();
 

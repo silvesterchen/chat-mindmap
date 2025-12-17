@@ -238,22 +238,164 @@ const useStore = create(persist((set, get) => ({
     // History
     past: [],
     future: [],
-    pushHistory: () => set((state) => {
-        const currentState = { nodes: JSON.parse(JSON.stringify(state.nodes)), edges: JSON.parse(JSON.stringify(state.edges)) };
+    pushHistory: (actionType = 'unknown') => set((state) => {
+        const currentState = { 
+            nodes: JSON.parse(JSON.stringify(state.nodes)), 
+            edges: JSON.parse(JSON.stringify(state.edges)),
+            actionType 
+        };
         // Limit history size to 50
         const newPast = [...state.past, currentState].slice(-50);
         return { past: newPast, future: [] };
     }),
     undo: () => set((state) => {
         if (state.past.length === 0) return {};
-        const previous = state.past[state.past.length - 1];
-        const newPast = state.past.slice(0, -1);
-        const current = { nodes: JSON.parse(JSON.stringify(state.nodes)), edges: JSON.parse(JSON.stringify(state.edges)) };
+        
+        let previous = state.past[state.past.length - 1];
+        let newPast = state.past.slice(0, -1);
+        
+        // If the previous state was a 'layout' action, skip it and go further back
+        // But wait, undo means we revert TO the previous state.
+        // If we revert to a state that was saved BEFORE a layout, that's fine.
+        // The issue is if the user clicked "Layout", a state was saved.
+        // Then the user clicks "Undo". We revert to the state BEFORE "Layout".
+        // This is correct behavior for undoing layout.
+        
+        // Wait, the user request says: "If the step to undo is auto-layout, then automatically continue to undo one more step, until the content to undo is a non-auto-layout operation"
+        
+        // This implies that the 'layout' operation itself saved a state, which we are now restoring.
+        // But usually, we save state BEFORE an operation.
+        // So state.past contains snapshots of the world.
+        // past[last] is the state before the MOST RECENT change.
+        
+        // Example:
+        // 1. Initial State (A) -> past: []
+        // 2. Add Node (B) -> pushHistory(A) -> past: [A], current: B
+        // 3. Layout (C) -> pushHistory(B, 'layout') -> past: [A, B(type='layout')], current: C
+        
+        // Undo 1:
+        // We take B from past. current becomes B. past becomes [A].
+        // But B was saved with type 'layout'.
+        // So if we restore B, we are restoring the state right before layout (which is the un-layouted state).
+        // This effectively UNDOES the layout.
+        
+        // The user says: "if the step to undo IS auto-layout".
+        // This might mean:
+        // If I just did a layout, and I click undo, I want to go back to BEFORE the layout. (This is standard undo)
+        // OR
+        // If I did (Add Node -> Layout), and I click Undo.
+        // Standard: Revert Layout -> Back to "Add Node" state (unorganized).
+        // User Request: "Continue undoing until non-auto-layout".
+        // This sounds like: "I don't want to just undo the layout, I want to undo the action BEFORE the layout too"?
+        // Or maybe: "I want to skip intermediate layout states if multiple layouts happened?"
+        
+        // Let's re-read: "如果撤销的步骤是自动排版，则自动继续网上撤销一步，直到撤销的内容为非自动排版操作"
+        // "If the step being undone IS auto-layout"
+        
+        // Scenario 1:
+        // State 0 (Clean)
+        // Action: Add Node -> State 1 (Node added)
+        // Action: Layout -> State 2 (Layouted)
+        
+        // History Stack (past): [State 0, State 1]
+        // Current: State 2
+        
+        // When we click Undo:
+        // We pop State 1. We restore State 1.
+        // State 1 is "Node Added" (but unlayouted).
+        // This IS undoing the layout.
+        
+        // Maybe the user means:
+        // Some operations trigger layout AUTOMATICALLY (like auto-layout on node add?).
+        // In my code, adding a child triggers layout.
+        
+        // Code: handleAddChild -> pushHistory() -> add node -> setTimeout(layout)
+        // Layout -> pushHistory() -> setNodes(layouted)
+        
+        // So:
+        // 1. Initial
+        // 2. Add Child:
+        //    - pushHistory (State A)
+        //    - update nodes (State B)
+        //    - layout triggers
+        //    - pushHistory (State B) [This is the layout push]
+        //    - update nodes (State C)
+        
+        // So past is [State A, State B]. Current is C.
+        // Undo 1: Restore State B (Unlayouted, with new node).
+        // Undo 2: Restore State A (No new node).
+        
+        // User wants: Click Undo once -> Jump straight to State A.
+        // Because State B is just an intermediate state of "Node added but not yet layouted".
+        // And the user considers "Add Node + Layout" as ONE atomic action.
+        
+        // So we need to detect if the state we are about to restore was saved just before a layout.
+        // If `previous.actionType === 'layout'`, it means this state was saved right before a layout happened.
+        // So restoring it brings us to the un-layouted state.
+        // We want to skip this and go deeper.
+        
+        const current = { 
+            nodes: JSON.parse(JSON.stringify(state.nodes)), 
+            edges: JSON.parse(JSON.stringify(state.edges)),
+            actionType: 'current' // doesn't matter
+        };
+        
+        // We need to accumulate future states
+        let accumulatedFuture = [current, ...state.future];
+        
+        // Loop to skip 'layout' states
+        while (previous && previous.actionType === 'layout') {
+            // This state was saved before a layout.
+            // We want to skip restoring this state, because restoring it just shows un-layouted mess.
+            // So we move this 'previous' to future (effectively undoing it without showing it)
+            // And look at the next one in past.
+            
+            // Wait, if we skip it, we need to add it to future so Redo works?
+            // Yes, standard undo/redo stack.
+            
+            accumulatedFuture = [previous, ...accumulatedFuture]; // Add the skipped state to future
+            
+            if (newPast.length === 0) {
+                // No more history, we have to stop here or return empty?
+                // If we ran out of history while skipping layouts, we effectively revert to initial empty state or we just stop.
+                // If newPast is empty, previous is undefined? No.
+                previous = null;
+                break;
+            }
+            
+            previous = newPast[newPast.length - 1];
+            newPast = newPast.slice(0, -1);
+        }
+        
+        if (!previous) {
+            // We skipped everything or history was empty?
+            // If we skipped everything, we might be at the very beginning.
+            // But we can't return empty object if we changed future.
+            // If previous is null, it means we consumed all history.
+            // We should probably just return the oldest state available if we can't skip anymore?
+            // Or if history is exhausted, we just stay at current?
+            
+            // If we consumed all past, we can't undo further.
+            // But we updated future.
+            // So we should return the updated future and maybe empty past.
+            // But what about nodes?
+            // If we can't find a non-layout state, we should probably just return to the earliest state we found?
+            
+            // Actually, if we consumed all past, it means all history steps were layouts? Unlikely.
+            // But if it happens, we probably just return the last found 'layout' state (which is the earliest).
+            // But let's assume there's always a base state.
+            
+            return {
+                past: [],
+                future: accumulatedFuture
+            };
+        }
+
         return {
             nodes: previous.nodes,
             edges: previous.edges,
             past: newPast,
-            future: [current, ...state.future]
+            future: accumulatedFuture
         };
     }),
     redo: () => set((state) => {
