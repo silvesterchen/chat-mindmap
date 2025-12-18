@@ -1,3 +1,5 @@
+[**English**](README_EN.md) | [**中文**](README.md)
+
 # Chat MindMap Tool
 🚀 告别线性对话桎梏，开启思维可视化新纪元！
 
