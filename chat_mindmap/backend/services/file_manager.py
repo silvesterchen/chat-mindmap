@@ -14,6 +14,40 @@ class FileManager:
         self.base_path = base_path
         if not os.path.exists(self.base_path):
             os.makedirs(self.base_path)
+        # Try to cleanup old trash on startup
+        self._cleanup_trash()
+
+    def _cleanup_trash(self, max_age_days: int = 30):
+        """
+        Cleanup trash files older than max_age_days.
+        Trash file format: .trash_{timestamp}_{uuid}_{original_name}
+        """
+        import time
+        try:
+            now = time.time()
+            cutoff = now - (max_age_days * 24 * 3600)
+            
+            if not os.path.exists(self.base_path):
+                return
+
+            for entry in os.scandir(self.base_path):
+                if entry.name.startswith(".trash_"):
+                    try:
+                        # Parse timestamp from filename
+                        parts = entry.name.split("_")
+                        if len(parts) >= 3:
+                            timestamp = float(parts[1])
+                            if timestamp < cutoff:
+                                # Too old, delete it permanently
+                                if entry.is_dir():
+                                    shutil.rmtree(entry.path)
+                                else:
+                                    os.remove(entry.path)
+                    except (ValueError, IndexError, OSError):
+                        # Ignore parse errors or delete errors
+                        pass
+        except Exception:
+            pass # Don't let cleanup crash the app
 
     def _get_abs_path(self, relative_path: str) -> str:
         # Normalize and join
@@ -103,10 +137,45 @@ class FileManager:
 
     def delete(self, path: str):
         abs_path = self._get_abs_path(path)
-        if os.path.isdir(abs_path):
-            shutil.rmtree(abs_path)
-        else:
-            os.remove(abs_path)
+        try:
+            if os.path.isdir(abs_path):
+                shutil.rmtree(abs_path)
+            else:
+                os.remove(abs_path)
+        except OSError as e:
+            # Handle Resource busy error (common on Mac/SMB)
+            if e.errno == 16:  # Resource busy
+                import time
+                import uuid
+                
+                # Try to rename to a hidden trash file
+                parent_dir = os.path.dirname(abs_path)
+                filename = os.path.basename(abs_path)
+                timestamp = int(time.time())
+                unique_id = str(uuid.uuid4())[:8]
+                new_name = f".trash_{timestamp}_{unique_id}_{filename}"
+                new_path = os.path.join(parent_dir, new_name)
+                
+                try:
+                    os.rename(abs_path, new_path)
+                    # File is "deleted" from user perspective
+                    
+                    # If on Windows, also set hidden attribute to ensure it's not visible in Explorer
+                    if os.name == 'nt':
+                        import subprocess
+                        try:
+                            subprocess.run(['attrib', '+h', new_path], check=False)
+                        except:
+                            pass
+                    
+                    # Trigger cleanup
+                    self._cleanup_trash()
+                            
+                except OSError as rename_error:
+                    # If rename also fails, re-raise original error
+                    raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
+            else:
+                raise HTTPException(status_code=500, detail=f"Failed to delete file: {str(e)}")
 
     def read_map(self, path: str) -> dict:
         abs_path = self._get_abs_path(path)
