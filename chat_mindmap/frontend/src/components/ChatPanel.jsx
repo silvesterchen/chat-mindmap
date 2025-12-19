@@ -261,9 +261,10 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
         // 2. Estimate total length
         // 3. Set min width 150, max width 400
         
-        const lines = content.split('\n');
+        const strippedContent = content.replace(/<[^>]*>/g, '');
+        const lines = strippedContent.split('\n');
         const maxLineLength = Math.max(...lines.map(l => l.length));
-        const totalLength = content.length;
+        const totalLength = strippedContent.length;
         
         // Approx 14px per char (simplified)
         // If single line is long, width should be wider
@@ -709,7 +710,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                                     const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
                                     let content = msg.content;
                                     if (prevMsg && prevMsg.role === 'user') {
-                                        content = `${prevMsg.content}\n\n${msg.content}`;
+                                        content = `<span style="color: #3b82f6">${prevMsg.content}</span>\n\n${msg.content}`;
                                     }
                                     handleInsertAsChild(content);
                                 }}
