@@ -131,6 +131,38 @@ const useStore = create(persist((set, get) => ({
       activeLlmConfig: config || state.activeLlmConfig
     };
   }),
+
+  // Personas
+  personas: [
+    {
+      id: 'default',
+      name: '默认身份',
+      prompt: '后续用户可能会提问的问题',
+      count: 3
+    }
+  ],
+  activePersonaId: 'default',
+  setPersonas: (personas) => set({ personas }),
+  setActivePersonaId: (id) => set({ activePersonaId: id }),
+  addPersona: (persona) => set((state) => ({
+    personas: [...state.personas, persona],
+    activePersonaId: persona.id // Auto switch to new persona
+  })),
+  updatePersona: (id, updates) => set((state) => ({
+    personas: state.personas.map(p => p.id === id ? { ...p, ...updates } : p)
+  })),
+  deletePersona: (id) => set((state) => {
+      const newPersonas = state.personas.filter(p => p.id !== id);
+      // If active persona is deleted, switch to default or first available
+      let newActiveId = state.activePersonaId;
+      if (state.activePersonaId === id) {
+          newActiveId = newPersonas.length > 0 ? newPersonas[0].id : null;
+      }
+      return {
+          personas: newPersonas,
+          activePersonaId: newActiveId
+      };
+  }),
   
   // UI
   isSidebarOpen: true,
@@ -417,8 +449,24 @@ const useStore = create(persist((set, get) => ({
     partialize: (state) => ({
         llmConfigs: state.llmConfigs,
         currentLlmConfigId: state.currentLlmConfigId,
-        activeLlmConfig: state.activeLlmConfig
-    })
+        activeLlmConfig: state.activeLlmConfig,
+        personas: state.personas,
+        activePersonaId: state.activePersonaId
+    }),
+    migrate: (persistedState, version) => {
+        if (version === 1) {
+            // Migration: Rename '默认助手' or '添加身份' to '默认身份'
+            if (persistedState.personas) {
+                persistedState.personas = persistedState.personas.map(p => {
+                    if (p.id === 'default' && (p.name === '默认助手' || p.name === '添加身份')) {
+                        return { ...p, name: '默认身份' };
+                    }
+                    return p;
+                });
+            }
+        }
+        return persistedState;
+    }
 }))
 
 export default useStore

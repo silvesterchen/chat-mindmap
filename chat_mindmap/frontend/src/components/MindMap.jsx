@@ -16,7 +16,7 @@ import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 import useStore from '../store/useStore';
 import { saveMap } from '../api';
-import { Download, Upload, Save, Plus, Trash2, MessageSquare, Layout, Undo, FileText, X, Copy, Check } from 'lucide-react';
+import { Download, Upload, Save, Plus, Trash2, MessageSquare, Layout, Undo, FileText, X, Copy, Check, Minimize2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { chatStream } from '../api';
@@ -34,9 +34,9 @@ const MindMapContent = () => {
         currentMapPath,
         setChatOpen, isChatOpen, setActiveNodeId,
         addChatMessage, clearChat,
-        updateNodeData,
+        updateNodeData, updateNode,
         chatHistories,
-        layoutTrigger,
+        layoutTrigger, triggerLayout,
         pushHistory, undo, past,
         activeLlmConfig
     } = useStore();
@@ -201,6 +201,30 @@ const MindMapContent = () => {
         // Optional: Add initial system message or context
         setMenu(null);
     }, [setActiveNodeId, setChatOpen]);
+
+    const handleGoldenRatioShrink = useCallback((id) => {
+        const node = nodes.find(n => n.id === id);
+        if (node && node.width) {
+            // Golden ratio calculation: Height > Width
+            // Target Height = Width * 1.618 (approx 1 / 0.618)
+            const targetHeight = node.width / 0.618;
+            
+            // IMPORTANT: Do NOT set overflowY on the node style, as it will clip the toolbar
+            const newStyle = { ...node.style, height: targetHeight };
+            if (newStyle.overflowY) {
+                delete newStyle.overflowY;
+            }
+
+            pushHistory();
+            updateNode(id, {
+                style: newStyle,
+                height: targetHeight
+            });
+            
+            setMenu(null);
+            setTimeout(() => triggerLayout(), 50);
+        }
+    }, [nodes, updateNode, triggerLayout, pushHistory]);
 
     // Reparenting on Drag Stop
     const onNodeDragStart = useCallback((event, node) => {
@@ -452,6 +476,9 @@ const MindMapContent = () => {
                 >
                     <button onClick={() => handleAddChild(menu.id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2">
                         <Plus size={14} /> 添加子节点
+                    </button>
+                    <button onClick={() => handleGoldenRatioShrink(menu.id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2">
+                        <Minimize2 size={14} /> 收缩节点
                     </button>
                     {/* Removed AI Chat option from context menu as Chat Panel is now always available */}
                     <button onClick={() => handleDeleteNode(menu.id)} className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-500 flex items-center gap-2">

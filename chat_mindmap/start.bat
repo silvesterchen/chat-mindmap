@@ -58,6 +58,10 @@ echo ========================================
 echo    启动成功！请访问以下地址使用:
 echo    http://localhost:3000
 echo ========================================
+
+:: Open browser
+start http://localhost:3000
+
 echo 按任意键停止所有服务并退出...
 
 pause >nul

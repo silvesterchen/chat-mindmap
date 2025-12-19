@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Settings, PlusCircle, Loader2, RefreshCw, PanelRightOpen, PanelRightClose } from 'lucide-react';
+import { X, Send, Settings, PlusCircle, Loader2, RefreshCw, PanelRightOpen, PanelRightClose, User, Edit2, Trash2 } from 'lucide-react';
 import useStore from '../store/useStore';
 import { chatStream, saveMap } from '../api';
 import ReactMarkdown from 'react-markdown';
@@ -13,7 +13,8 @@ const ChatPanel = () => {
         currentMapPath, getChatContext, isChatInterrupted, interruptChat, resetChatInterrupt,
         triggerLayout,
         suggestions, setSuggestions, isSuggestionsLoading, setSuggestionsLoading,
-        pushHistory
+        pushHistory,
+        personas, activePersonaId, setActivePersonaId, addPersona, updatePersona, deletePersona
     } = useStore();
 
     const [input, setInput] = useState('');
@@ -26,10 +27,20 @@ const ChatPanel = () => {
         base_url: '',
         api_key: '',
         temperature: 0.7,
-        max_tokens: 1000,
-        suggestion_prompt: '后续用户可能会提问的问题',
-        suggestion_count: 3
+        max_tokens: 1000
     });
+    
+    // Persona state
+    const [showPersonaModal, setShowPersonaModal] = useState(false);
+    const [editingPersona, setEditingPersona] = useState(null); // 'new' or persona object
+    const [personaForm, setPersonaForm] = useState({
+        name: '',
+        prompt: '',
+        count: 3
+    });
+
+    const activePersona = personas.find(p => p.id === activePersonaId) || personas[0];
+
     const messagesEndRef = useRef(null);
 
     const activeNode = nodes.find(n => n.id === activeNodeId);
@@ -41,8 +52,8 @@ const ChatPanel = () => {
         setSuggestionsLoading(true);
         setSuggestions([]);
 
-        const prompt = activeLlmConfig.suggestion_prompt || "后续用户可能会提问的问题";
-        const count = activeLlmConfig.suggestion_count || 3;
+        const prompt = activePersona?.prompt || "后续用户可能会提问的问题";
+        const count = activePersona?.count || 3;
 
         const systemMsg = {
             role: 'system',
@@ -301,9 +312,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
             base_url: config.base_url,
             api_key: config.api_key,
             temperature: config.temperature,
-            max_tokens: config.max_tokens,
-            suggestion_prompt: config.suggestion_prompt || '后续用户可能会提问的问题',
-            suggestion_count: config.suggestion_count || 3
+            max_tokens: config.max_tokens
         });
     };
 
@@ -317,9 +326,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                 base_url: '',
                 api_key: '',
                 temperature: 0.7,
-                max_tokens: 1000,
-                suggestion_prompt: '后续用户可能会提问的问题',
-                suggestion_count: 3
+                max_tokens: 1000
             });
         }
     };
@@ -327,6 +334,49 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
     const handleDeleteConfig = (id) => {
         if (confirm('确定要删除这个配置吗？')) {
             deleteLlmConfig(id);
+        }
+    };
+
+    // Persona Handlers
+    const handleAddPersona = () => {
+        setEditingPersona('new');
+        setPersonaForm({
+            name: '',
+            prompt: '',
+            count: 3
+        });
+    };
+
+    const handleEditPersona = (persona) => {
+        setEditingPersona(persona);
+        setPersonaForm({
+            name: persona.name,
+            prompt: persona.prompt,
+            count: persona.count
+        });
+    };
+
+    const handleSavePersona = () => {
+        if (editingPersona === 'new') {
+            const newPersona = {
+                id: `persona_${Date.now()}`,
+                ...personaForm
+            };
+            addPersona(newPersona);
+        } else if (editingPersona) {
+            updatePersona(editingPersona.id, personaForm);
+        }
+        setEditingPersona(null);
+        setPersonaForm({ name: '', prompt: '', count: 3 });
+    };
+
+    const handleDeletePersona = (id) => {
+        if (personas.length <= 1) {
+            alert("至少保留一个身份");
+            return;
+        }
+        if (confirm('确定要删除这个身份吗？')) {
+            deletePersona(id);
         }
     };
 
@@ -481,24 +531,6 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">建议提示词 (Suggestion Prompt)</label>
-                                <textarea 
-                                    value={configForm.suggestion_prompt}
-                                    onChange={e => setConfigForm({...configForm, suggestion_prompt: e.target.value})}
-                                    className="w-full p-2 border rounded text-sm h-16 resize-none"
-                                    placeholder="后续用户可能会提问的问题"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">建议数量 (Suggestion Count)</label>
-                                <input 
-                                    type="number" min="1" max="10"
-                                    value={configForm.suggestion_count}
-                                    onChange={e => setConfigForm({...configForm, suggestion_count: parseInt(e.target.value)})}
-                                    className="w-full p-2 border rounded text-sm"
-                                />
-                            </div>
                             <div className="flex gap-2">
                                 <button 
                                     onClick={editingConfig === 'new' ? handleAddConfig : handleUpdateConfig}
@@ -526,6 +558,98 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                             </div>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Persona Modal */}
+            {showPersonaModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={() => setShowPersonaModal(false)}>
+                    <div 
+                        className="bg-white shadow-2xl border border-gray-200 rounded-lg p-4 w-96 max-h-[600px] flex flex-col"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center mb-3 border-b pb-2">
+                            <h3 className="font-semibold text-gray-700">提问agent身份配置</h3>
+                            <button onClick={() => setShowPersonaModal(false)} className="text-gray-500 hover:bg-gray-100 p-1 rounded">
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        {!editingPersona ? (
+                            <div className="flex-1 overflow-y-auto space-y-2">
+                                {personas.map(p => (
+                                    <div key={p.id} className={`p-2 border rounded flex justify-between items-center ${activePersonaId === p.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}>
+                                        <div 
+                                            className="flex-1 cursor-pointer flex items-center gap-2"
+                                            onClick={() => setActivePersonaId(p.id)}
+                                        >
+                                            <User size={16} className={activePersonaId === p.id ? 'text-blue-500' : 'text-gray-500'} />
+                                            <span className="text-sm font-medium">{p.name}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button onClick={() => handleEditPersona(p)} className="p-1 text-gray-500 hover:text-blue-600">
+                                                <Edit2 size={14} />
+                                            </button>
+                                            <button onClick={() => handleDeletePersona(p.id)} className="p-1 text-gray-500 hover:text-red-600">
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                <button 
+                                    onClick={handleAddPersona}
+                                    className="w-full py-2 border border-dashed border-gray-300 rounded text-gray-500 hover:bg-gray-50 text-sm flex items-center justify-center gap-1 mt-2"
+                                >
+                                    <PlusCircle size={16} /> 添加身份
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">身份名称</label>
+                                    <input 
+                                        value={personaForm.name}
+                                        onChange={e => setPersonaForm({...personaForm, name: e.target.value})}
+                                        className="w-full p-2 border rounded text-sm"
+                                        placeholder="例如：创意助手"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">建议提示词</label>
+                                    <textarea 
+                                        value={personaForm.prompt}
+                                        onChange={e => setPersonaForm({...personaForm, prompt: e.target.value})}
+                                        className="w-full p-2 border rounded text-sm h-32 resize-none"
+                                        placeholder="基于当前内容，给出3个发散性的创意点..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">建议数量</label>
+                                    <input 
+                                        type="number" min="1" max="10"
+                                        value={personaForm.count}
+                                        onChange={e => setPersonaForm({...personaForm, count: parseInt(e.target.value)})}
+                                        className="w-full p-2 border rounded text-sm"
+                                    />
+                                </div>
+                                <div className="flex gap-2 pt-2">
+                                    <button 
+                                        onClick={handleSavePersona}
+                                        disabled={!personaForm.name}
+                                        className="flex-1 bg-blue-500 text-white py-1.5 rounded text-sm hover:bg-blue-600 disabled:bg-gray-300"
+                                    >
+                                        保存
+                                    </button>
+                                    <button 
+                                        onClick={() => setEditingPersona(null)}
+                                        className="flex-1 bg-gray-200 text-gray-700 py-1.5 rounded text-sm hover:bg-gray-300"
+                                    >
+                                        返回
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
@@ -620,25 +744,37 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
             {/* Input */}
             <div className="p-4 border-t border-gray-200 bg-white">
                 <div className="flex gap-2">
-                    <textarea 
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={e => {
-                            if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-                                e.preventDefault();
-                                if (!isLoading) {
-                                    handleSend();
+                    <div className="flex flex-col flex-1 gap-2">
+                         <textarea 
+                            value={input}
+                            onChange={e => setInput(e.target.value)}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+                                    e.preventDefault();
+                                    if (!isLoading) {
+                                        handleSend();
+                                    }
                                 }
-                            }
-                        }}
-                        placeholder="Ask AI..."
-                        className="flex-1 p-2 border border-gray-300 rounded resize-none h-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={isLoading}
-                    />
+                            }}
+                            placeholder="Ask AI..."
+                            className="w-full p-2 border border-gray-300 rounded resize-none h-20 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            disabled={isLoading}
+                        />
+                        <div className="flex justify-between items-center">
+                            <button 
+                                onClick={() => setShowPersonaModal(!showPersonaModal)}
+                                className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                                title="切换/配置身份"
+                            >
+                                <User size={14} />
+                                <span>更换身份（{activePersona?.name || '默认身份'}）</span>
+                            </button>
+                        </div>
+                    </div>
                     {isLoading ? (
                         <button 
                             onClick={handleStop}
-                            className="px-3 bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center"
+                            className="px-3 bg-red-500 text-white rounded hover:bg-red-600 flex items-center justify-center h-20"
                             title="中断对话"
                         >
                             <div className="w-4 h-4 bg-white rounded-sm"></div>
@@ -647,7 +783,7 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
                         <button 
                             onClick={() => handleSend()}
                             disabled={!input.trim()}
-                            className="px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 flex items-center justify-center"
+                            className="px-3 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 flex items-center justify-center h-20"
                         >
                             <Send size={18} />
                         </button>

@@ -7,7 +7,7 @@ import remarkBreaks from 'remark-breaks';
 import rehypeRaw from 'rehype-raw';
 import { marked } from 'marked';
 import TurndownService from 'turndown';
-import { Bold, Underline, Heading1, Heading2, Heading3, Minus, Type, ChevronDown, List, ListOrdered } from 'lucide-react';
+import { Bold, Underline, Heading1, Heading2, Heading3, Minus, Type, ChevronDown, List, ListOrdered, Minimize2 } from 'lucide-react';
 
 // Configure Turndown
 const turndownService = new TurndownService({
@@ -190,6 +190,17 @@ const Toolbar = ({ onAction, currentFormat }) => {
             >
                 <Minus size={16} />
             </button>
+
+            <div className="w-px h-4 bg-gray-300 mx-1"></div>
+
+            {/* Golden Ratio Shrink */}
+            <button 
+                onMouseDown={(e) => handleAction(e, 'goldenRatioShrink')}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-700"
+                title="黄金比例收缩"
+            >
+                <Minimize2 size={16} />
+            </button>
         </div>
     );
 };
@@ -240,6 +251,33 @@ export default memo(({ id, data, selected }) => {
     }, [handleSelectionChange]);
 
     const executeCommand = (command, value = null) => {
+        if (command === 'goldenRatioShrink') {
+            const node = getNode(id);
+            if (node && node.width) {
+                // Golden ratio calculation: Height > Width
+                // Target Height = Width * 1.618 (approx 1 / 0.618)
+                const targetHeight = node.width / 0.618;
+                
+                // IMPORTANT: Do NOT set overflowY on the node style, as it will clip the toolbar (which is positioned outside with negative top).
+                // The internal container div already handles overflow-y-auto.
+                
+                const newStyle = { ...node.style, height: targetHeight };
+                if (newStyle.overflowY) {
+                    delete newStyle.overflowY;
+                }
+
+                pushHistory();
+                updateNode(id, {
+                    style: newStyle,
+                    height: targetHeight
+                });
+                
+                // Trigger layout to adjust surrounding nodes if needed
+                setTimeout(() => triggerLayout(), 50);
+            }
+            return;
+        }
+
         document.execCommand(command, false, value);
         if (editorRef.current) {
             editorRef.current.focus();

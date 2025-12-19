@@ -89,6 +89,16 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}   启动成功！请访问以下地址使用:   ${NC}"
 echo -e "${GREEN}   http://localhost:3000           ${NC}"
 echo -e "${GREEN}========================================${NC}"
+
+# Open browser
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    open http://localhost:3000
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    if command -v xdg-open &> /dev/null; then
+        xdg-open http://localhost:3000
+    fi
+fi
+
 echo -e "${BLUE}按 Ctrl+C 停止所有服务${NC}"
 
 # Keep script running to maintain background processes
