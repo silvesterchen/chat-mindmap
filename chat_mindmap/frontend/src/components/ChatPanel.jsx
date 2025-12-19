@@ -145,13 +145,38 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
         }
     };
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToBottom = (force = false) => {
+        const container = document.getElementById('chat-messages-container');
+        if (container) {
+            const threshold = 100;
+            const distanceToBottom = container.scrollHeight - container.scrollTop - container.clientHeight;
+            const isNearBottom = distanceToBottom < threshold;
+            
+            if (force || isNearBottom) {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }
+        } else {
+            if (force) {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            }
+        }
     };
 
+    const prevMessagesLengthRef = useRef(0);
+
     useEffect(() => {
-        scrollToBottom();
+        // Only force scroll if new message added (length changed)
+        // For streaming updates (length same), use smart scroll (only if near bottom)
+        const isNewMessage = chatMessages.length > prevMessagesLengthRef.current;
+        scrollToBottom(isNewMessage);
+        prevMessagesLengthRef.current = chatMessages.length;
     }, [chatMessages]);
+
+    useEffect(() => {
+        if (isChatOpen) {
+            setTimeout(() => scrollToBottom(true), 100);
+        }
+    }, [isChatOpen]);
 
     // Auto-save chat history when messages change
     useEffect(() => {
@@ -213,7 +238,6 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
             (chunk) => {
                 fullResponse += chunk;
                 updateLastMessage(fullResponse);
-                scrollToBottom();
             },
             (err) => {
                 console.error(err);
