@@ -8,6 +8,10 @@ A canvas-based AI dialogue tool that supports AI assistant conversations and con
 > ✨ Developed mimicking the flowith interaction style, adapted for MacOS/Windows dual systems (Windows startup experience optimized).
 
 <img width="1702" height="807" alt="image" src="https://github.com/user-attachments/assets/304f8f18-6257-4dbb-86de-3571cfbedf71" />
+
+You can freely configure the identity of the question-asking agent to help you organize your thoughts, conduct research, and brainstorm.
+<img width="1669" height="866" alt="image" src="https://github.com/user-attachments/assets/506f0950-6d85-486b-82e0-5b0fca7c96ae" />
+
 Demo Video: https://www.bilibili.com/video/BV1YGqhBKEf6/?vd_source=724965bec351ba7062c785c9203557e1
 
 ## 🎯 Core Value: Why Choose Chat MindMap?
