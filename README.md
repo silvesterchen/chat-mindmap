@@ -8,6 +8,11 @@
 > ✨ 模仿flowith交互方式开发，MacOS/Windows双系统适配（Windows已优化启动体验）
 
 <img width="1702" height="807" alt="image" src="https://github.com/user-attachments/assets/304f8f18-6257-4dbb-86de-3571cfbedf71" />
+
+可以自由配置提问agent的身份，实现两个agent进行对话帮你梳理思路、调研、头脑风暴。
+<img width="1669" height="866" alt="image" src="https://github.com/user-attachments/assets/294dbcc0-9c82-4cb0-a820-b2a7dcf1c802" />
+
+
 演示视频：https://www.bilibili.com/video/BV1YGqhBKEf6/?vd_source=724965bec351ba7062c785c9203557e1
 
 ## 🎯 核心价值：为什么选择Chat MindMap？
