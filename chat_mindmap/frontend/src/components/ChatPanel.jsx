@@ -247,12 +247,25 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
             abortController.signal
         );
         
+        // Auto-insert as child node upon completion if not aborted
+        if (!abortController.signal.aborted) {
+            const formattedContent = `<span style="color: #3b82f6">${contentToSend}</span>\n\n${fullResponse}`;
+            handleInsertAsChild(formattedContent);
+        }
+        
         setIsLoading(false);
         abortControllerRef.current = null;
     };
 
     const handleInsertAsChild = (content) => {
-        if (!activeNode) return;
+        // Use getState to ensure we have the latest nodes/edges/activeNodeId even if called asynchronously
+        const state = useStore.getState();
+        const currentNodes = state.nodes;
+        const currentEdges = state.edges;
+        const currentActiveNodeId = state.activeNodeId;
+        const currentActiveNode = currentNodes.find(n => n.id === currentActiveNodeId);
+
+        if (!currentActiveNode) return;
         
         pushHistory();
 
@@ -288,23 +301,27 @@ Output strictly a JSON array of strings, e.g. ["question 1", "question 2"]. Do n
             calculatedWidth = Math.max(calculatedWidth, 250);
         }
 
+        // Golden Ratio Height
+        const calculatedHeight = calculatedWidth / 0.618;
+
         const newNode = {
             id: `${Date.now()}`,
             type: 'default',
-            position: { x: activeNode.position.x + 200, y: activeNode.position.y },
+            position: { x: currentActiveNode.position.x + 200, y: currentActiveNode.position.y },
             data: { label: content, notes: content },
-            style: { width: calculatedWidth }, // Set initial width
+            style: { width: calculatedWidth, height: calculatedHeight }, // Set initial dimensions with Golden Ratio
             width: calculatedWidth, // For layout engine
+            height: calculatedHeight, // For layout engine
         };
         
         const newEdge = {
-            id: `e${activeNode.id}-${newNode.id}`,
-            source: activeNode.id,
+            id: `e${currentActiveNode.id}-${newNode.id}`,
+            source: currentActiveNode.id,
             target: newNode.id,
         };
 
-        setNodes([...nodes, newNode]);
-        setEdges([...edges, newEdge]);
+        setNodes([...currentNodes, newNode]);
+        setEdges([...currentEdges, newEdge]);
         
         // Trigger auto-layout
         setTimeout(() => triggerLayout(), 50);
