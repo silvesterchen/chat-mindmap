@@ -16,7 +16,7 @@ import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 import useStore from '../store/useStore';
 import { saveMap } from '../api';
-import { Download, Upload, Save, Plus, Trash2, MessageSquare, Layout, Undo, FileText, X, Copy, Check, Minimize2 } from 'lucide-react';
+import { Download, Upload, Save, Plus, Trash2, MessageSquare, Layout, Undo, FileText, X, Copy, Check, Minimize2, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { chatStream } from '../api';
@@ -272,20 +272,57 @@ const MindMapContent = () => {
         }
     };
 
-    // Export Markdown Logic
-    const handleExportMarkdown = async () => {
-        setIsExporting(true);
-        setExportContent('');
-        setExportStatus('generating');
-        setIsCopied(false);
+    const [exportDetailLevel, setExportDetailLevel] = useState('general');
+    const [exportScenario, setExportScenario] = useState('general');
 
+    const handleExportMarkdown = () => {
+        setIsExporting(true);
+        setExportStatus('config'); // Start with config step
+        setExportContent('');
+        setIsCopied(false);
+    };
+
+    const startExportGeneration = async () => {
+        setExportStatus('generating');
+        
         // Collect all node contents
         const allNodesContent = nodes.map(node => `- ${node.data.label}`).join('\n');
         
+        let scenarioPrompt = "";
+        switch (exportScenario) {
+            case 'project_planning':
+                scenarioPrompt = "请采用【项目规划】格式：包括背景、目标、范围、里程碑、资源需求、风险评估等部分。";
+                break;
+            case 'learning_notes':
+                scenarioPrompt = "请采用【学习笔记】格式：包括核心概念说明、详细原理拆解、个人思考、应用场景联想、总结等部分。";
+                break;
+            case 'brainstorming':
+                scenarioPrompt = "请采用【头脑风暴】格式：包括核心议题、发散思维点、观点聚类、可行性分析、后续行动项等部分。";
+                break;
+            case 'problem_analysis':
+                scenarioPrompt = "请采用【问题分析】格式：包括问题描述、根本原因分析、潜在解决方案、优劣势对比、推荐方案等部分。";
+                break;
+            case 'general':
+            default:
+                scenarioPrompt = "请采用清晰通用的文档格式，根据内容自然划分章节。";
+                break;
+        }
+
+        let detailPrompt = "";
+        if (exportDetailLevel === 'detailed') {
+            detailPrompt = "请务必进行【详细扩写】：不要只列出大纲，要对每个要点进行深入阐述，补充具体的细节、例子或解释，确保内容丰富详实，字数充足。";
+        } else {
+            detailPrompt = "请保持【通用篇幅】：内容精炼概括，重点突出，无需过度展开细节。";
+        }
+
         const systemMsg = {
             role: 'system',
-            content: `你是一位乐于助人的助手。你的任务是将提供的思维导图节点整理成一份结构清晰的 Markdown 文档，要求根据内容选择合适的输出格式，例如调研最终格式要符合调研的格式，有背景、目标、内容、结论；技术学习核心知识点梳理、实操、成果和后续方向、总结；学习类笔记有核心概念说明、原理、个人思考、应用场景联想等。
-            这份文档要进行适当的扩写和润色，让文章显出一条清晰的故事线，能让新手也能理解，需适合分享与阅读，要保证逻辑连贯、格式规范（包含标题、列表、加粗文本，根据文章内容适当划分章节），并完整覆盖所有相关内容。
+            content: `你是一位专业的文档助手。你的任务是将提供的思维导图节点整理成一份结构清晰的 Markdown 文档。
+            
+            1. **格式要求**：${scenarioPrompt}
+            2. **详细程度**：${detailPrompt}
+            
+            请根据上述要求对导图内容进行整理和润色。让文章显出一条清晰的故事线，逻辑连贯、格式规范（包含标题、列表、加粗文本），并完整覆盖所有相关内容。
             文档中请勿添加任何前言或后记，只保留 Markdown 格式的正文内容。`
         };
 
@@ -398,7 +435,67 @@ const MindMapContent = () => {
                         </div>
                         
                         <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
-                            {exportStatus === 'idle' || exportStatus === 'generating' ? (
+                            {exportStatus === 'config' ? (
+                                <div className="space-y-6 bg-white p-6 rounded shadow-sm border border-gray-200">
+                                    {/* Scenario Selection */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-3">使用场景</label>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {[
+                                                { id: 'general', label: '通用', desc: '标准文档格式' },
+                                                { id: 'project_planning', label: '项目规划', desc: '背景/目标/里程碑' },
+                                                { id: 'learning_notes', label: '学习笔记', desc: '概念/原理/总结' },
+                                                { id: 'brainstorming', label: '头脑风暴', desc: '议题/聚类/行动' },
+                                                { id: 'problem_analysis', label: '问题分析', desc: '原因/方案/对比' }
+                                            ].map(item => (
+                                                <button
+                                                    key={item.id}
+                                                    onClick={() => setExportScenario(item.id)}
+                                                    className={`p-3 border rounded-lg text-left text-sm transition-all flex flex-col gap-1 ${exportScenario === item.id ? 'border-blue-500 bg-blue-50 text-blue-700 ring-1 ring-blue-500' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+                                                >
+                                                    <span className="font-medium">{item.label}</span>
+                                                    <span className="text-xs text-gray-500 opacity-80">{item.desc}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Detail Level Selection */}
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-3">详细程度</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {[
+                                                { id: 'general', label: '通用', desc: '内容精炼，重点突出，适合快速阅读' },
+                                                { id: 'detailed', label: '详细', desc: '深入扩写，补充细节与示例，适合深入学习' }
+                                            ].map(level => (
+                                                <div 
+                                                    key={level.id}
+                                                    onClick={() => setExportDetailLevel(level.id)}
+                                                    className={`cursor-pointer p-3 border rounded-lg flex items-start gap-3 transition-all ${exportDetailLevel === level.id ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`}
+                                                >
+                                                    <div className={`mt-0.5 w-4 h-4 rounded-full border flex items-center justify-center ${exportDetailLevel === level.id ? 'border-blue-500' : 'border-gray-400'}`}>
+                                                        {exportDetailLevel === level.id && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                                                    </div>
+                                                    <div>
+                                                        <div className={`text-sm font-medium ${exportDetailLevel === level.id ? 'text-blue-700' : 'text-gray-700'}`}>{level.label}</div>
+                                                        <div className="text-xs text-gray-500 mt-0.5">{level.desc}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <div className="pt-4 flex justify-end border-t border-gray-100">
+                                        <button 
+                                            onClick={startExportGeneration}
+                                            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium flex items-center gap-2 shadow-sm transition-colors"
+                                        >
+                                            <FileText size={18} /> 开始生成文档
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : exportStatus === 'generating' ? (
                                 <div className="space-y-4">
                                     {exportContent ? (
                                         <div className="prose max-w-none bg-white p-6 rounded shadow-sm border border-gray-200">
@@ -407,9 +504,9 @@ const MindMapContent = () => {
                                     ) : (
                                         <div className="flex flex-col items-center justify-center h-64 text-gray-500">
                                             <div className="animate-spin mb-4">
-                                                <Layout size={32} className="text-blue-500" />
+                                                <Loader2 size={32} className="text-blue-500" />
                                             </div>
-                                            <p>正在根据导图内容生成文档，请稍候...</p>
+                                            <p>正在根据您的选择生成文档，请稍候...</p>
                                         </div>
                                     )}
                                 </div>
